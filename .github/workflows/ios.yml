@@ -40,6 +40,9 @@ jobs:
       - name: Generate the iOS project
         run: npx cap add ios
 
+      - name: App icon
+        run: npx capacitor-assets generate --ios
+
       - name: Location usage description
         run: |
           /usr/libexec/PlistBuddy -c "Add :NSLocationWhenInUseUsageDescription string 'Used only to read the weather record for the place you are in.'" ios/App/App/Info.plist

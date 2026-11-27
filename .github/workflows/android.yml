@@ -50,6 +50,11 @@ jobs:
       - name: Generate the Android project
         run: npx cap add android
 
+      - name: Launcher icons
+        run: |
+          npx capacitor-assets generate --android
+          node scripts/android-adaptive-icons.mjs
+
       - name: Allow the location picker
         run: |
           sed -i '/<\/manifest>/i\    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />' android/app/src/main/AndroidManifest.xml
