@@ -2,17 +2,23 @@
   "name": "Meteo and Global Warming — a weather app that keeps the history",
   "short_name": "Meteo & Warming",
   "description": "Today's weather for any city, next to the record since 1940: every month against the 1991-2020 normal, and the planet's own trend.",
-  "id": "/",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
   "orientation": "portrait",
   "background_color": "#f6f5f2",
   "theme_color": "#f6f5f2",
   "lang": "en",
   "dir": "ltr",
-  "categories": ["weather", "education", "utilities"],
+  "categories": [
+    "weather",
+    "education",
+    "utilities"
+  ],
   "icons": [
     {
       "src": "./icons/icon-192.png",
@@ -39,7 +45,12 @@
       "short_name": "History",
       "description": "How the climate of this city changed since 1940",
       "url": "./#history",
-      "icons": [{ "src": "./icons/icon-192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "./icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ]
 }
