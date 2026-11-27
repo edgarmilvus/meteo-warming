@@ -4,21 +4,27 @@ A weather app for any city, with the part other weather apps leave out: every
 figure can be read against the 1991–2020 normal, and the whole record since 1940
 is one tab away.
 
-Default place: **New York**. The interface is in English.
+Runs as a web app, an installable PWA, and an Android APK. Default place:
+**New York**. The interface is in English.
 
 ---
 
 ## Run it
 
 ```bash
-cd app
 npm install
 npm run dev        # http://localhost:5173
 npm run build      # static site in dist/
 npm run preview    # serve the build
 ```
 
-Node 20+. No API keys, no environment variables, no backend.
+Node 22+. No API keys, no environment variables, no backend.
+
+Refresh the bundled datasets (New York + NASA, once a month):
+
+```bash
+npm run data
+```
 
 ---
 
@@ -46,20 +52,39 @@ city's 1991–2020 one.
 
 **About** — sources, method, limits.
 
+### Units
+
+A °C / °F switch sits in the header, next to the refresh button. It changes
+every temperature and every anomaly in the app, charts included, and is
+remembered in `localStorage` under `climate.unit` (default °C).
+
+Internally everything is Celsius; only the display converts. An absolute
+temperature converts as `c * 9/5 + 32`, an anomaly (a difference) as `c * 1.8`,
+because a difference has no offset.
+
 ---
 
 ## Places
 
 The city name in the header opens the picker: type a name, pick a result, or use
-**Use my location** (browser geolocation, reverse geocoded to a name).
+**Use my location**.
 
+- Search is Open-Meteo's geocoder, sorted with exact name matches first and then
+  by population, so "Bologna" returns Bologna and not a village with the same
+  name.
+- **Use my location** asks the system permission through
+  `@capacitor/geolocation` inside the Android/iOS shell (a bare WebView never
+  shows the prompt) and through `navigator.geolocation` in a browser. It asks for
+  low accuracy on purpose: a 25 km grid cell does not need GPS, and low accuracy
+  returns in seconds.
 - The choice is saved in `localStorage` under `climate.city` and restored on the
   next visit.
 - New York ships with the app (`src/data/nyc.json`), so it opens instantly and
   works offline.
 - Any other place is fetched once from the Open-Meteo archive (1940 → today) and
   kept in `localStorage`, at most three places, oldest evicted first. The first
-  fetch for a place can take up to a minute; after that it is instant.
+  fetch for a place can take up to a minute (the archive builds the series on the
+  fly); after that it is instant and offline.
 
 ---
 
@@ -73,13 +98,7 @@ The city name in the header opens the picker: type a name, pick a result, or use
 | Reverse geocoding | BigDataCloud client API | — | free client-side |
 | Global annual | [NASA GISTEMP v4](https://data.giss.nasa.gov/gistemp/) | 1951–1980, as published | public domain |
 
-Refresh the bundled data once a month:
-
-```bash
-npm run data      # rewrites src/data/nyc.json and src/data/global.json
-```
-
-The script writes `src/data/nyc.json` (about 280 KB, one value per day) and
+`npm run data` writes `src/data/nyc.json` (about 280 KB, one value per day) and
 `src/data/global.json`. NASA sometimes drops the TLS connection; the script then
 falls back to `scripts/gistemp-fallback.csv`.
 
@@ -107,25 +126,116 @@ All in `src/lib/stats.js`, from the daily series, on the device:
 
 ---
 
+## Android
+
+Capacitor wraps the built web app. The native project is generated in CI, not
+committed.
+
+**Build without installing anything:** the `Android APK` workflow
+(`.github/workflows/android.yml`) runs on `ubuntu-latest`, which already has the
+JDK and the Android SDK, and uploads `app-debug.apk` as an artifact.
+
+```bash
+gh workflow run android.yml      # or: Actions → Android APK → Run workflow
+```
+
+**Build locally** (needs a JDK and the Android SDK, ~1.3 GB):
+
+```bash
+npm run cap:sync            # build + copy into the native project
+npx cap add android        # once
+cd android && ./gradlew assembleDebug
+```
+
+Current build: `com.edgarmilvus.climate`, versionCode 1, minSdk 24 (Android 7),
+targetSdk 36, about 4.8 MB.
+
+**Installing:** sideload the APK (`adb install app-debug.apk`, AirDrop, or a
+local HTTP server). Debug builds from CI are signed with the runner's throwaway
+debug key, so **uninstall the previous version before installing a new one** —
+Android refuses an update signed with a different key.
+
+**Permissions:** `INTERNET`, `ACCESS_COARSE_LOCATION`, `ACCESS_FINE_LOCATION`.
+The workflow adds the two location entries after generating the project.
+
+---
+
+## iOS
+
+Same project, same command; only the signing differs.
+
+`.github/workflows/ios.yml` runs on `macos-15` (Xcode 16.4 preinstalled), adds
+`NSLocationWhenInUseUsageDescription` to `Info.plist`, and compiles an
+**unsigned** simulator build to prove nothing is iOS-specific broken.
+
+An installable `.ipa` needs an Apple Developer Program membership (99 $/year),
+an Apple Distribution certificate (`.p12` + password), a provisioning profile and
+the Team ID. Those go in GitHub secrets and the job switches to
+`xcodebuild archive` + `exportArchive` with an `ExportOptions.plist`
+(`development` for your own iPhone, `app-store` for TestFlight). A free Apple ID
+cannot do this in CI: it only provisions a 7-day build from Xcode with the device
+plugged in.
+
+---
+
+## Publishing on Google Play
+
+Not done yet. What stands between the APK and the store:
+
+1. **A signed AAB**, not the debug APK: `./gradlew bundleRelease` with an upload
+   keystore (`keytool -genkeypair`), secrets in CI, Play App Signing enabled.
+   The `versionCode` must increase with every upload.
+2. **targetSdk 36** — already true, and required for new apps since 31 Aug 2026.
+3. **Play Console account**, 25 $ once, with identity and device verification.
+4. **Privacy policy on a public URL** — required, because the app reads the
+   location and calls external services.
+5. **Data safety form** — location (optional, only to choose the grid cell),
+   coordinates sent to Open-Meteo and BigDataCloud, no account, no advertising.
+6. **Content rating questionnaire** (IARC) and the store listing: icon 512×512,
+   feature graphic 1024×500, 2–8 screenshots, title, short and full description.
+7. **The 12-tester gate.** Personal accounts created after 13 Nov 2023 must run a
+   closed test with at least 12 testers opted in for 14 unbroken days, then apply
+   for production access. Organisation accounts (with a D-U-N-S number) are
+   exempt from that specific gate. Buying testers is against policy and usually
+   ends in "more testing required".
+
+The app is a WebView shell, so the listing has to make the difference obvious:
+it works offline, computes 86 years of records on the device, and shows the
+comparison no other weather app shows.
+
+---
+
 ## Layout
 
 ```
-App.js                  the original React Native prototype (unchanged)
-app/
-  scripts/fetch-data.mjs  bakes the static datasets
-  src/data/               baked series (nyc.json, global.json)
-  src/lib/stats.js        every historical figure
-  src/lib/live.js         forecast fetch + WMO weather codes
-  src/lib/geocode.js      place search, geolocation, reverse geocode
-  src/lib/series.js       bundled / cached / fetched daily records
-  src/components/         charts (hand drawn SVG), icons, place picker
-  src/screens/            Today, History, Planet, About
-  src/styles.css          the whole design system
+scripts/fetch-data.mjs    bakes the static datasets
+scripts/make-icons.py     draws the PWA icons (needs PIL)
+src/data/                 baked series (nyc.json, global.json)
+src/lib/stats.js          every historical figure
+src/lib/live.js           forecast fetch + WMO weather codes
+src/lib/geocode.js        place search, geolocation, reverse geocode
+src/lib/series.js         bundled / cached / fetched daily records
+src/lib/units.jsx         Celsius to Fahrenheit at the display edge only
+src/components/           charts (hand drawn SVG), icons, place picker
+src/screens/              Today, History, Planet, About
+src/styles.css            the whole design system
+public/                   manifest, service worker, icons
+capacitor.config.json     appId, appName, webDir
+.github/workflows/        android.yml, ios.yml
 ```
 
-Charts are plain SVG drawn at measured pixel width, no chart library: the same
-components port to `react-native-svg` almost line for line when the app moves to
-Expo for the iOS and Android builds.
+The charts are plain SVG drawn at a measured pixel width, with no chart library,
+so they render identically in the browser and in the WebView.
+
+---
+
+## Known gaps
+
+- **Launcher icons** are still Capacitor's defaults on Android and iOS. The PWA
+  icons in `public/icons` are the real ones; the native mipmaps and AppIcon set
+  are not generated yet (`npx @capacitor/assets generate` is the intended tool).
+- **No release build** yet: no keystore, no AAB, no Play listing.
+- **No widget, no notifications**, which is what makes a weather app sticky.
 
 ---
 
