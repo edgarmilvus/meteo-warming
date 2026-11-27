@@ -321,7 +321,7 @@ export default function App() {
   const model = useMemo(() => (dataset ? buildModel(dataset) : null), [dataset]);
 
   useEffect(() => {
-    document.title = `Climate — ${city.name}, and how it has changed since 1940`;
+    document.title = `Meteo and Global Warming — ${city.name}, and how it has changed since 1940`;
   }, [city]);
 
   const aroundRows = useMemo(() => {

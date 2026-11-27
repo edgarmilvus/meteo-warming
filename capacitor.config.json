@@ -1,6 +1,6 @@
 {
   "appId": "com.edgarmilvus.climate",
-  "appName": "Climate",
+  "appName": "Meteo & Warming",
   "webDir": "dist",
   "server": {
     "androidScheme": "https"

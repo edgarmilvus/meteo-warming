@@ -1,4 +1,4 @@
-# Climate — a weather app that keeps the history
+# Meteo and Global Warming — a weather app that keeps the history and shows global warming
 
 A weather app for any city, with the part other weather apps leave out: every
 figure can be read against the 1991–2020 normal, and the whole record since 1940

@@ -1,6 +1,6 @@
 {
-  "name": "Climate — a weather app that keeps the history",
-  "short_name": "Climate",
+  "name": "Meteo and Global Warming — a weather app that keeps the history",
+  "short_name": "Meteo & Warming",
   "description": "Today's weather for any city, next to the record since 1940: every month against the 1991-2020 normal, and the planet's own trend.",
   "id": "/",
   "start_url": "./",
