@@ -1,0 +1,45 @@
+{
+  "name": "Climate — a weather app that keeps the history",
+  "short_name": "Climate",
+  "description": "Today's weather for any city, next to the record since 1940: every month against the 1991-2020 normal, and the planet's own trend.",
+  "id": "/",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait",
+  "background_color": "#f6f5f2",
+  "theme_color": "#f6f5f2",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["weather", "education", "utilities"],
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "History",
+      "short_name": "History",
+      "description": "How the climate of this city changed since 1940",
+      "url": "./#history",
+      "icons": [{ "src": "./icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
