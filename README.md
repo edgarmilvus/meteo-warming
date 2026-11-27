@@ -1,5 +1,9 @@
 # Meteo and Global Warming — a weather app that keeps the history and shows global warming
 
+**Live: <https://edgarmilvus.github.io/meteo-warming/>** — opens in any browser,
+no install. On a phone, "Add to Home Screen" puts the icon there and it runs
+offline.
+
 A weather app for any city, with the part other weather apps leave out: every
 figure can be read against the 1991–2020 normal, and the whole record since 1940
 is one tab away.
