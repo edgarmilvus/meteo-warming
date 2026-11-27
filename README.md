@@ -219,3 +219,20 @@ so they render identically in the browser and in the WebView.
 - Reanalysis is revised as models improve; values can move by a few tenths.
 - One day or one month is weather. Only decades carry the climate signal.
 - One city is not the planet, which is why the Planet tab exists.
+
+---
+
+## Licence
+
+The code is **MIT** — see [LICENSE](LICENSE). Use it, fork it, ship it, teach
+with it.
+
+The data is not mine to relicense:
+
+- ERA5 through Open-Meteo is **CC BY 4.0**, attribution required.
+- NASA GISTEMP is public domain, attribution appreciated.
+- Reverse geocoding by BigDataCloud, under their free client-side terms.
+
+If you reuse the app, keep the source lines in the About tab and the
+attribution in the footer: the whole argument rests on the data being
+checkable.`
