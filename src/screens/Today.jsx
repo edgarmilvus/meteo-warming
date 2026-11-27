@@ -190,12 +190,34 @@ export default function Today({
             </button>
           </div>
           <button
-            className="ghost-btn"
+            className="ghost-btn refresh-btn"
             onClick={onRefresh}
             disabled={status === "loading"}
-            title="Reload the current conditions and the seven day forecast"
+            title={
+              status === "loading"
+                ? "Updating the current conditions and the seven day forecast"
+                : "Reload the current conditions and the seven day forecast"
+            }
+            aria-label="Reload the forecast"
           >
-            {status === "loading" ? "Updating…" : "Refresh"}
+            <svg
+              className="refresh-icon"
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M20 11a8 8 0 1 0-2.3 6.3" />
+              <path d="M20 5v6h-6" />
+            </svg>
+            <span className="refresh-label">
+              {status === "loading" ? "Updating…" : "Refresh"}
+            </span>
           </button>
         </div>
       </header>

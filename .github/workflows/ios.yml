@@ -40,6 +40,11 @@ jobs:
       - name: Generate the iOS project
         run: npx cap add ios
 
+      - name: Location usage description
+        run: |
+          /usr/libexec/PlistBuddy -c "Add :NSLocationWhenInUseUsageDescription string 'Used only to read the weather record for the place you are in.'" ios/App/App/Info.plist
+          /usr/libexec/PlistBuddy -c "Print :NSLocationWhenInUseUsageDescription" ios/App/App/Info.plist
+
       - name: Compile for the simulator
         run: |
           xcodebuild \

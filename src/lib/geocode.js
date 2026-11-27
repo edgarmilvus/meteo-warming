@@ -1,5 +1,10 @@
 // Place search and reverse geocoding. Open-Meteo's geocoder for names,
 // BigDataCloud for "where am I" (no key, CORS open).
+//
+// Location has two paths: inside the native shell the Capacitor plugin asks
+// Android or iOS for the permission; in a browser it is navigator.geolocation.
+// The WebView alone never shows the system prompt, which is why the plugin is
+// here at all.
 
 const SEARCH_URL = "https://geocoding-api.open-meteo.com/v1/search";
 const REVERSE_URL = "https://api.bigdatacloud.net/data/reverse-geocode-client";
@@ -36,10 +41,35 @@ export async function searchPlaces(query, { signal } = {}) {
   return places.sort((a, b) => exact(b) - exact(a) || b.population - a.population);
 }
 
-export function currentPosition() {
+const isNative = () => Boolean(window.Capacitor?.isNativePlatform?.());
+
+async function nativePosition() {
+  const { Geolocation } = await import("@capacitor/geolocation");
+
+  const permission = await Geolocation.checkPermissions();
+  let state = permission.location;
+  if (state !== "granted") {
+    const asked = await Geolocation.requestPermissions();
+    state = asked.location;
+  }
+  if (state === "denied") {
+    throw new Error(
+      "Location permission was denied for this app. You can allow it in the phone settings, or search for a city.",
+    );
+  }
+
+  const pos = await Geolocation.getCurrentPosition({
+    enableHighAccuracy: false, // a 25 km grid cell does not need the GPS
+    timeout: 25000,
+    maximumAge: 600000,
+  });
+  return { lat: pos.coords.latitude, lon: pos.coords.longitude };
+}
+
+function browserPosition() {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) {
-      reject(new Error("This browser cannot read your location."));
+      reject(new Error("This browser cannot read your location. Search for a city instead."));
       return;
     }
     navigator.geolocation.getCurrentPosition(
@@ -52,9 +82,21 @@ export function currentPosition() {
         };
         reject(new Error(messages[err.code] || "Your location could not be read."));
       },
-      { timeout: 12000, maximumAge: 600000 },
+      { timeout: 25000, maximumAge: 600000, enableHighAccuracy: false },
     );
   });
+}
+
+export async function currentPosition() {
+  if (isNative()) {
+    try {
+      return await nativePosition();
+    } catch (err) {
+      // Capacitor rejects with { code, message } or an Error; keep the message.
+      throw new Error(err?.message || "Your location could not be read.");
+    }
+  }
+  return browserPosition();
 }
 
 export async function reversePlace(lat, lon) {
