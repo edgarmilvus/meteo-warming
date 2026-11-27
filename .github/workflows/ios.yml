@@ -1,0 +1,61 @@
+name: iOS
+
+# Compiles the same web app wrapped for iOS. The macOS runner has Xcode
+# preinstalled, so nothing is installed on a laptop.
+#
+# This job builds unsigned, which proves the project compiles and catches
+# iOS-only breakage. An installable .ipa needs an Apple Developer account:
+# see the README section "Signing iOS".
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 40
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Xcode
+        run: |
+          xcodebuild -version
+          xcodebuild -showsdks | grep -i iphoneos
+
+      - name: Dependencies
+        run: npm ci
+
+      - name: Web build
+        run: npm run build
+
+      - name: Generate the iOS project
+        run: npx cap add ios
+
+      - name: Compile for the simulator
+        run: |
+          xcodebuild \
+            -project ios/App/App.xcodeproj \
+            -scheme App \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -derivedDataPath build \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Keep the .app
+        uses: actions/upload-artifact@v4
+        with:
+          name: climate-ios-app
+          path: build/Build/Products/Debug-iphonesimulator/App.app
+          if-no-files-found: error
+          retention-days: 30
