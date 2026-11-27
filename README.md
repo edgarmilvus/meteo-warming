@@ -178,33 +178,6 @@ plugged in.
 
 ---
 
-## Publishing on Google Play
-
-Not done yet. What stands between the APK and the store:
-
-1. **A signed AAB**, not the debug APK: `./gradlew bundleRelease` with an upload
-   keystore (`keytool -genkeypair`), secrets in CI, Play App Signing enabled.
-   The `versionCode` must increase with every upload.
-2. **targetSdk 36** — already true, and required for new apps since 31 Aug 2026.
-3. **Play Console account**, 25 $ once, with identity and device verification.
-4. **Privacy policy on a public URL** — required, because the app reads the
-   location and calls external services.
-5. **Data safety form** — location (optional, only to choose the grid cell),
-   coordinates sent to Open-Meteo and BigDataCloud, no account, no advertising.
-6. **Content rating questionnaire** (IARC) and the store listing: icon 512×512,
-   feature graphic 1024×500, 2–8 screenshots, title, short and full description.
-7. **The 12-tester gate.** Personal accounts created after 13 Nov 2023 must run a
-   closed test with at least 12 testers opted in for 14 unbroken days, then apply
-   for production access. Organisation accounts (with a D-U-N-S number) are
-   exempt from that specific gate. Buying testers is against policy and usually
-   ends in "more testing required".
-
-The app is a WebView shell, so the listing has to make the difference obvious:
-it works offline, computes 86 years of records on the device, and shows the
-comparison no other weather app shows.
-
----
-
 ## Layout
 
 ```
